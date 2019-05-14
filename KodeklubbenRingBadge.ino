@@ -20,13 +20,14 @@
 #define DATA_PIN 15
 
 // Antall LED-pixler på ringen:
-#define LED_COUNT 16
+#define ANTALL_PIXLER 16
 
 // Lag et NeoPixel objekt:
-Adafruit_NeoPixel ring(LED_COUNT, DATA_PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel ring(ANTALL_PIXLER, DATA_PIN, NEO_GRB + NEO_KHZ800);
+// Det som står mellom parentesene kalles Argumenter:
 // Argument 1 = Antall pixler i NeoPixel ringen
 // Argument 2 = Arduino pinnenummer
-// Argument 3 = Pixel type flagg (det finnes flere typer enn den vi bruker):
+// Argument 3 = Pixel type (det finnes flere typer enn den vi bruker):
 //   NEO_KHZ800  800 KHz bitstrøm (800.000 bits per sekund, 0,00000125sek per bit)
 //   NEO_GRB     Grønn Rød Blå
 
@@ -36,21 +37,20 @@ Adafruit_NeoPixel ring(LED_COUNT, DATA_PIN, NEO_GRB + NEO_KHZ800);
 // 8 for hver farge: Grønn, Rød og Blå. Vi har også gitt objektet
 // vårt et navn: "ring".
 
-// Ring-objektet har en slags notatblokk i RAM. Der kan vi fargelegge
-// ringen, uten at det vises mens vi jobber med fargeleggingen. Det
-// vises først når vi gjør ring.show()
+// Ring-objektet har en slags notatblokk i RAM (RAM er hukommelse). Der
+// kan vi fargelegge ringen, uten at det vises mens vi jobber med
+// fargeleggingen. Det vises først når vi gjør ring.show()
+
 
 // setup() kjører én gang under oppstart  --------------------------------
-
 void setup() {
   ring.begin(); // Starter NeoPixel ring objektet
-  ring.show(); // Slå av alle pixler først
-  ring.setBrightness(40); // Sett lysstyrken til ca 1/6 (max = 255)
+  ring.show(); // Slår av alle pixler først
+  ring.setBrightness(40); // Setter lysstyrken til ca 1/6 (max = 255)
 }
 
 
 // loop() kjører hele tiden mens strømmen er på, etter at setup() er ferdig.
-
 void loop() {
   // Fyll hele ringen med forskjellige farger, med en sveip-effekt:
   fyllFarge(ring.Color(255,   0,   0), 50); // Rød
@@ -62,17 +62,17 @@ void loop() {
   snurrFarge(ring.Color(127,   0,   0), 50); // Rød, halv lysstyrke (127 av 255)
   snurrFarge(ring.Color(  0,   0, 127), 50); // Blå, halv lysstyrke (127 av 255)
 
-  regnbue(10); // Vri en regnbue rundt hele ringen...
-  snurrGlitterRegnbue(50); // Glittre en regnbue rundt hele ringen...
+  regnbue(10); // Vri en regnbue rundt hele ringen. Argumentet er farten på snurringen.
+  snurrGlitterRegnbue(50); // Glittre en regnbue rundt hele ringen. Argumentet er farten.
 }
 
 
 // Her lager vi noen funksjoner for å animere farger -----------------
 
 // Fyll pixlene i ringen med farge, en etter en. Ringen viskes ikke ut
-// først; fargen som er der fra før blir byttet ut pixel for pixel.
-// Vi sender farger som en hel 'pakke' med 32-bit lengde, som vi får
-// ved å bruke ring.Color(rød, grønn, blå) som vist i loop().
+// først; fargene som er der fra før blir byttet ut pixel for pixel.
+// Vi sender farger til hver pixelsom en hel 'pakke' med rød, grønn og blå,
+// som vi får ved å bruke ring.Color(rød, grønn, blå) som vist i loop().
 // Vi har også en 'ventetid' (i millisekunder) mellom hver pixel.
 void fyllFarge(uint32_t farge, int ventetid) {
   for(int i=0; i<ring.numPixels(); i++) { // For hver pixel i ringen...
@@ -81,6 +81,7 @@ void fyllFarge(uint32_t farge, int ventetid) {
     delay(ventetid);                      // Vent litt, så en gang til.
   }
 }
+
 
 // Løpende prikker snurrer på ringen. Send inn en farge (32-bit lengde,
 // lik ring.Color(r,g,b) slik som 'fyllFarge' over), og en ventetid (i ms)
@@ -91,7 +92,7 @@ void snurrFarge(uint32_t farge, int ventetid) {
       ring.clear();             // Sett alle pixler i RAM til 0 (av)
       // 'c' teller opp fra 'b' til enden/starten av ringen i steg på 3...
       for(int c=b; c<ring.numPixels(); c += 3) {
-        ring.setPixelColor(c, farge); // Sett pixel nummer 'c' til verdi 'farge', i RAM
+        ring.setPixelColor(c, farge); // Sett pixel nummer 'c' til 'farge', i RAM
       }
       ring.show(); // Oppdater ringen til de nye fargene slik det står i RAM
       delay(ventetid);  // Vent litt, og gjenta...
@@ -99,7 +100,8 @@ void snurrFarge(uint32_t farge, int ventetid) {
   }
 }
 
-// Snurrer en regnbue på ringen. Gi den en ventetid mellom 'bildene'i animasjonen,
+
+// Snurrer en regnbue på ringen. Gi den en ventetid mellom 'bildene' i animasjonen,
 // som et Argument mellom parentesene: regnbue(ventetiden i millisekunder).
 void regnbue(int ventetid) {
   // Fargen på første pixel kjører 5 fulle løkker/loops gjennom fargepaletten.
@@ -108,7 +110,7 @@ void regnbue(int ventetid) {
   // klokka: vi skjønner at om 25 timer er klokka 1 time mer enn den er nå.
   // Bare tell fra 0 til 5*65536. Å legge 256 til startpixelFarge hver gang
   // betyr at vi går gjennom paletten med skritt som er 256 lange. Slik at vi
-  // går 5*65536/256 = 1280 omganger gjennom denne yttre loopen:
+  // går 5*65536/256 = 1280 omganger gjennom denne ytre loopen:
   for(long startpixelFarge = 0; startpixelFarge < 5*65536; startpixelFarge += 256) {
     for(int i=0; i<ring.numPixels(); i++) { // For hver pixel i ringen...
 
@@ -136,6 +138,7 @@ void regnbue(int ventetid) {
     delay(ventetid);  // Vent litt
   }
 }
+
 
 // Snurrer en glitrende regnbue på ringen. Gi den en ventetid (i millisekunder, ms)
 // mellom 'bildene' i animasjonen. Legg merke til at vi bruker både det engelske ordet 'hue'
